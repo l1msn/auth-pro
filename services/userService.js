@@ -1,6 +1,7 @@
 //Инициализация библиотек
 const bcrypt = require("bcrypt");
 const uuid = require("uuid");
+require("dotenv").config();
 
 //Инициализация модулей
 const User = require("../models/userModel");
@@ -16,6 +17,7 @@ class userService{
     /**
      * @description - Метод сервиса пользователя для регистрации
      * @method
+     * @async
      * @param email - емаил пользователя
      * @param password - пароль пользователя
      */
@@ -55,7 +57,9 @@ class userService{
 
             //Отправляем на почту ссылку на активацию
             console.log("Sending message to email...")
-            await emailService.sendActivationEmail(email, activationLink);
+            await emailService.sendActivationEmail(email,
+                (process.env.API_URL.toString() || "auth4pro@gmail.com")
+                        + "/auth/activate/" + activationLink);
 
             //Создаем обьект для трансфера данных пользователя
             console.log("Creating Dto for user...")
@@ -89,6 +93,30 @@ class userService{
             console.log(error);
         }
 
+    }
+
+    /**
+     * @description - Метод активации пользователя
+     * @method
+     * @async
+     * @param activationLink - ссылка активации
+     */
+    async activate(activationLink){
+        try {
+            //Поиск пользователя по ссылке
+            console.log("Activating user by link")
+            const user = await User.findOne({activationLink: activationLink});
+            if (!user)
+                throw new Error("Uncorrected link");
+
+            //Измение поля на активированный
+            user.isActivated = true;
+            await user.save();
+        } catch (error) {
+            //Обрабатываем ошибки и отправляем статус код
+            console.log("Error on activating in User service")
+            console.log(error);
+        }
     }
 }
 

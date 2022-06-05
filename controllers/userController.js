@@ -1,4 +1,5 @@
 //Инициализация библиотек
+require("dotenv").config()
 
 //Инициализация модулей
 const userService = require("../services/userService");
@@ -17,7 +18,6 @@ class UserController{
      * @param request - запрос
      * @param response - ответ
      * @param next - следущая middleware функция
-     * @return {Promise<*>}
      */
     async registration(request,response,next){
         try {
@@ -54,7 +54,6 @@ class UserController{
      * @param request - запрос
      * @param response - ответ
      * @param next - следущая middleware функция
-     * @return {Promise<*>}
      */
     async login(request,response,next){
         try {
@@ -72,7 +71,6 @@ class UserController{
      * @param request - запрос
      * @param response - ответ
      * @param next - следущая middleware функция
-     * @return {Promise<*>}
      */
     async logout(request,response,next){
         try {
@@ -90,11 +88,21 @@ class UserController{
      * @param request - запрос
      * @param response - ответ
      * @param next - следущая middleware функция
-     * @return {Promise<*>}
      */
-    async activated(request,response,next){
+    async activate(request,response,next){
         try {
+            //Получаем ссылку активации
+            const activationLink = request.params.link;
+            //Если ее нет - выбрасываем ошибку
+            if(!activationLink)
+                throw new Error("Cannot get activation Link");
 
+            //Активируем пользователя
+            await userService.activate(activationLink);
+            console.log("Activation user success");
+
+            //Производим перенаправление на клиентскую часть фронта
+            return response.redirect((process.env.CLIENT_URL || "https://www.google.com"));
         } catch (error){
             //Обрабатываем ошибки и отправляем статус код
             console.log("Error on activating user in Controller")

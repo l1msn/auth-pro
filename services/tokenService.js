@@ -13,6 +13,7 @@ class tokenService{
     /**
      * @description - генерация токена
      * @method
+     * @async
      * @param payload - информация о пользователе
      */
     async generateToken(payload){
@@ -54,6 +55,7 @@ class tokenService{
     /**
      * @description - сохранение нового или обновление старого refresh Token
      * @method
+     * @async
      * @param userId - id пользователя
      * @param refreshToken - refresh Token пользователя
      */
