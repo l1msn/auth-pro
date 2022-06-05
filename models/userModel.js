@@ -7,18 +7,17 @@ const mongoose = require("mongoose");
 /**
  * @description - Схема пользователя
  * @scheme
- * @type {Model<T & Document<any, any, any>>}
  */
 const User = mongoose.model('User',
     new mongoose.Schema({
         //Имя
-        name: { type: String, required: true },
+        name: { type: String },
         //Почта
         email: { type: String, required: true, unique: true },
         //Пароль
         password: { type: String, required: true },
         //Роль
-        role: { type: String, enum: ['Admin', 'User'], required: true },
+        role: { type: String, enum: ['Admin', 'User'], default: 'User' },
         //Активирован ли пользователь
         isActivated: {type: Boolean, default: false},
         //Ссылка активации

@@ -42,8 +42,9 @@ app.use("/auth",router);
         ).catch((error)=>{
             console.log(error);
             throw new Error("Error on connecting to DB")
-
         });
+
+        console.log("Access connecting to DB to URI: " + DB_URI);
 
         //Прослушиваем сервер
         app.listen(PORT,()=>{
