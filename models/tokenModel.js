@@ -7,11 +7,10 @@ const mongoose = require("mongoose");
 /**
  * @description - Схема refresh token
  * @scheme
- * @type {Model<T & Document<any, any, any>>}
  */
 const Token = mongoose.model('Token',
     new mongoose.Schema({
-        user: {type: mongoose.Schema.Types.ObjectId, ref: "Token"},
+        user: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
         refreshToken: {type: String, require: true},
         createDate: { type: String, default:
                 (new Intl.DateTimeFormat("ru", {dateStyle: "short", timeStyle: "short"}).format(new Date()))
