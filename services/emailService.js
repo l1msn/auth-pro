@@ -33,6 +33,7 @@ class emailService{
      * @param link - ссылка активации
      */
     async sendActivationEmail(to, link){
+        console.log("Sending email...")
         await this.transporter.sendMail({
             from: (process.env.SMTP_USER || "auth4pro@gmail.com"),
             to,

@@ -104,7 +104,6 @@ class userService{
     async activate(activationLink){
         try {
             //Поиск пользователя по ссылке
-            console.log("Activating user by link")
             const user = await User.findOne({activationLink: activationLink});
             if (!user)
                 throw new Error("Uncorrected link");
@@ -115,6 +114,61 @@ class userService{
         } catch (error) {
             //Обрабатываем ошибки и отправляем статус код
             console.log("Error on activating in User service")
+            console.log(error);
+        }
+    }
+
+    /**
+     * @description - Метод логина пользователя
+     * @method
+     * @param email - емаил пользователя
+     * @param password - пароль пользователя
+     */
+    async login(email, password) {
+        try {
+            //Ищем пользователя в БД
+            console.log("Checking for already exist user...");
+            const user = await User.findOne({email: email});
+            //Если такой пользователь есть - выбрасываем ошибку
+            if (!user)
+                throw new Error("User not exist");
+
+            //Расхэшируем пароль
+            console.log("Rehashing password...");
+            const isEqualPassword = bcrypt.compareSync(password, user.password);
+            //Если произошла ошибка шифрования - выбрасываем ошибку
+            if (!isEqualPassword)
+                throw new Error("Password not equal");
+            console.log("Password equal: " + isEqualPassword);
+
+            //Создаем обьект для трансфера данных пользователя
+            console.log("Creating Dto for user...")
+            const userDto = new UserDto(user);
+            //Если не удаеться создать - то выбрасываем ошибку
+            if (!userDto)
+                throw new Error("Error on creating user");
+            console.log("User Dto created: " + userDto);
+
+            //Генерируем токены
+            console.log("Generating new tokens...")
+            const tokens = await tokenService.generateToken({...userDto});
+            //Если не удаеться создать - то выбрасываем ошибку
+            if (!tokens)
+                throw new Error("Error on generating tokens");
+
+            //Сохраняем или обновляем токен
+            console.log("Saving or update refresh token...")
+            await tokenService.saveToken(userDto.id, tokens.refreshToken);
+
+            //Возвращаем токены и информацию о пользователе
+            console.log("Sending info and tokens...");
+            return {
+                ...tokens,
+                user: userDto
+            }
+        } catch (error) {
+            //Обрабатываем ошибки и отправляем статус код
+            console.log("Error on login in User service")
             console.log(error);
         }
     }

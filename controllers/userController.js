@@ -23,9 +23,11 @@ class UserController{
     async registration(request,response,next){
         try {
             //Получим ошибки валидации
+            console.log("Checking for validation errors...");
             const errorValid = validator.validationResult(request);
             if(!errorValid.isEmpty())
                 return next(authError.badRequest("Validation error", errorValid.array()));
+
             //Получаем из тела запроса данные
             console.log("Getting data from request...")
             const {email, password} = request.body;
@@ -61,7 +63,30 @@ class UserController{
      */
     async login(request,response,next){
         try {
+            //Получим ошибки валидации
+            console.log("Checking for validation errors...");
+            const errorValid = validator.validationResult(request);
+            if(!errorValid.isEmpty())
+                return next(authError.badRequest("Validation error", errorValid.array()));
 
+            //Получаем из тела запроса данные
+            console.log("Getting data from request...");
+            const {email, password} = request.body;
+            if(!email || !password)
+                throw authError.badRequest("Not found data in request");
+            console.log("Data are: " + email + " , " + password);
+
+            //Логин пользователя
+            console.log("Login user...")
+            const userData = await userService.login(email, password);
+            if(!userData)
+                throw authError.badRequest("Error on login");
+            console.log("Success auth login")
+            //Добавляем в cookie refreshToken
+            response.cookie("refreshToken", userData.refreshToken, {maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true});
+
+            //Возвращаем данные
+            return response.json(userData);
         } catch (error){
             console.log("Error on login in Controller")
             next(error);
@@ -93,6 +118,7 @@ class UserController{
      */
     async activate(request,response,next){
         try {
+            console.log("Activation user by email...")
             //Получаем ссылку активации
             const activationLink = request.params.link;
             //Если ее нет - выбрасываем ошибку
