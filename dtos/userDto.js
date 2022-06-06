@@ -14,5 +14,5 @@ class userDto {
         this.isActivated = model.isActivated;
     }
 }
-
+//Экспортируем данный модуль
 module.exports = userDto;

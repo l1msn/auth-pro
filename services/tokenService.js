@@ -86,5 +86,5 @@ class tokenService{
         }
     }
 }
-
+//Экспортируем данный модуль
 module.exports = new tokenService();

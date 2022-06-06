@@ -8,15 +8,16 @@ require("dotenv").config()
 //Инициализация модулей
 const logger = require("./middleware/logger");
 const router = require("./routes/index");
+const errorMiddleware = require("./middleware/errorMiddleware")
 
 //Инициализируем Express
 const app = express();
 
 //Константы
 const PORT = process.env.PORT || 3000;
-const DB_URI = ("mongodb://" + (process.env.MONGO_HOST || "mongo")
-        + ":" + (process.env.MONGO_PORT || "27017") + "/" + (process.env.MONGO_NAME || "auth"))
-    || ("mongodb://127.0.0.1:27017/auth");
+const DB_URI = "mongodb://" + (process.env.MONGO_HOST || "mongo")
+        + ":" + (process.env.MONGO_PORT || "27017")
+            + "/" + (process.env.MONGO_NAME || "auth");
 
 //Инициализируем возможность работы с json
 app.use(express.json());
@@ -31,6 +32,8 @@ app.use(logger);
 //Маршутизация
 app.use("/auth",router);
 
+app.use(errorMiddleware);
+
 //Запускаем сервер
 (async ()=>{
     try {
@@ -41,7 +44,7 @@ app.use("/auth",router);
             }
         ).catch((error)=>{
             console.log(error);
-            throw new Error("Error on connecting to DB")
+            throw new Error("Error on connecting to DB");
         });
 
         console.log("Access connecting to DB to URI: " + DB_URI);

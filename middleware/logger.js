@@ -1,4 +1,6 @@
+//Инициализация библиотек
 const fs = require("fs");
+
 /**
  * @description - логгер запросв
  * @function
@@ -16,5 +18,6 @@ const logger = (request,response,next)=>{
     fs.appendFile("server.log", data + "\n", function(){});
     next();
 };
+
 //Экспортируем данный модуль
 module.exports = logger;

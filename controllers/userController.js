@@ -3,7 +3,8 @@ require("dotenv").config()
 
 //Инициализация модулей
 const userService = require("../services/userService");
-
+const authError = require("../exceptions/authError");
+const validator = require("express-validator");
 
 //Класс контроллер для аунтификации и действий пользователя
 /**
@@ -21,11 +22,15 @@ class UserController{
      */
     async registration(request,response,next){
         try {
+            //Получим ошибки валидации
+            const errorValid = validator.validationResult(request);
+            if(!errorValid.isEmpty())
+                return next(authError.badRequest("Validation error", errorValid.array()));
             //Получаем из тела запроса данные
             console.log("Getting data from request...")
             const {email, password} = request.body;
             if(!email || !password)
-                throw new Error("Not found data in request");
+                throw authError.badRequest("Not found data in request");
             console.log("Data are: " + email + " , " + password);
 
             //Регистрируем пользователя
@@ -33,7 +38,7 @@ class UserController{
             const userData = await userService.registration(email, password);
             //Если не получаеться - выбрасываем ошибку
             if(!userData)
-                throw new Error("Error on getting data after registration");
+                throw authError.badRequest("Error on registration");
             console.log("New user is created");
 
             //Добавляем в cookie refreshToken
@@ -43,8 +48,7 @@ class UserController{
             return response.json(userData);
         } catch (error){
             console.log("Error on registration in Controller")
-            console.log(error);
-            return response.status(400).json({message: error.message});
+            next(error);
         }
     }
     /**
@@ -60,8 +64,7 @@ class UserController{
 
         } catch (error){
             console.log("Error on login in Controller")
-            console.log(error);
-            return response.status(400).json({message: error.message});
+            next(error);
         }
     }
     /**
@@ -77,8 +80,7 @@ class UserController{
 
         } catch (error){
             console.log("Error on logout in Controller")
-            console.log(error);
-            return response.status(400).json({message: error.message});
+            next(error);
         }
     }
     /**
@@ -95,7 +97,7 @@ class UserController{
             const activationLink = request.params.link;
             //Если ее нет - выбрасываем ошибку
             if(!activationLink)
-                throw new Error("Cannot get activation Link");
+                throw authError.badRequest("Cannot get activation Link");
 
             //Активируем пользователя
             await userService.activate(activationLink);
@@ -106,8 +108,7 @@ class UserController{
         } catch (error){
             //Обрабатываем ошибки и отправляем статус код
             console.log("Error on activating user in Controller")
-            console.log(error);
-            return response.status(400).json({message: error.message});
+            next(error);
 
         }
     }
@@ -118,7 +119,6 @@ class UserController{
      * @param request - запрос
      * @param response - ответ
      * @param next - следущая middleware функция
-     * @return {Promise<*>}
      */
     async refresh(request,response,next){
         try {
@@ -126,8 +126,7 @@ class UserController{
         } catch (error){
             //Обрабатываем ошибки и отправляем статус код
             console.log("Error on refresh token in Controller")
-            console.log(error);
-            return response.status(400).json({message: error.message});
+            next(error);
         }
     }
     /**
@@ -137,7 +136,6 @@ class UserController{
      * @param request - запрос
      * @param response - ответ
      * @param next - следущая middleware функция
-     * @return {Promise<*>}
      */
     async getUsers(request,response,next){
         try {
@@ -145,8 +143,7 @@ class UserController{
         } catch (error){
             //Обрабатываем ошибки и отправляем статус код
             console.log("Error on getting users in Controller")
-            console.log(error);
-            return response.status(400).json({message: error.message});
+            next(error);
         }
     }
 }

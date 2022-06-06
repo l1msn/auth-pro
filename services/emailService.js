@@ -12,7 +12,9 @@ class emailService{
     //Настройка стандартной конфигурации почты рассылки
     constructor() {
         this.transporter = nodeMailer.createTransport({
+            //Сервис почты
             service: "gmail",
+            //Хост почты
             host: (process.env.SMTP_HOST || "smtp.gmail.com"),
             port: (process.env.SMTP_PORT || 587),
             secure: false,
@@ -47,7 +49,7 @@ class emailService{
             if(error){
                 console.log("Email could not sent due to error");
                 console.log(error);
-            }else{
+            } else {
                 console.log("Email has been sent successfully");
             }
         });
