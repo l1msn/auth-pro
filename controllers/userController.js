@@ -26,7 +26,7 @@ class UserController{
             console.log("Checking for validation errors...");
             const errorValid = validator.validationResult(request);
             if(!errorValid.isEmpty())
-                return next(authError.badRequest("Validation error", errorValid.array()));
+                return authError.badRequest("Validation error", errorValid.array());
 
             //Получаем из тела запроса данные
             console.log("Getting data from request...")
@@ -67,7 +67,7 @@ class UserController{
             console.log("Checking for validation errors...");
             const errorValid = validator.validationResult(request);
             if(!errorValid.isEmpty())
-                return next(authError.badRequest("Validation error", errorValid.array()));
+                throw authError.badRequest("Validation error", errorValid.array());
 
             //Получаем из тела запроса данные
             console.log("Getting data from request...");

@@ -6,7 +6,7 @@ const mongoose = require("mongoose");
 require("dotenv").config()
 
 //Инициализация модулей
-const logger = require("./middleware/logger");
+const logger = require("./middleware/requestLogger");
 const router = require("./routes/index");
 const errorMiddleware = require("./middleware/errorMiddleware")
 

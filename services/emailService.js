@@ -16,8 +16,11 @@ class emailService{
             service: "gmail",
             //Хост почты
             host: (process.env.SMTP_HOST || "smtp.gmail.com"),
+            //Порт почты
             port: (process.env.SMTP_PORT || 587),
+            //Защита по протоколу
             secure: false,
+            //Данные для аунтификации почты
             auth: {
                 user: (process.env.SMTP_USER || "auth4pro@gmail.com"),
                 pass: (process.env.SMTP_PASSWORD || "ppmtywjqzibseeta")
@@ -34,10 +37,15 @@ class emailService{
      */
     async sendActivationEmail(to, link){
         console.log("Sending email...")
+        //Отправка сообщения
         await this.transporter.sendMail({
+            //От кого
             from: (process.env.SMTP_USER || "auth4pro@gmail.com"),
+            //Для кого
             to,
+            //Заголовок
             subject: "Активация аккаунта на " + (process.env.API_URL || "http://localhost:3000"),
+            //Текст сообщения
             text: "",
             html:
             `
@@ -45,7 +53,7 @@ class emailService{
                     <h1>Для активации перейдите по ссылке</h1>
                     <a href="${link}">${link}</a>
                 </div>>
-            `
+            `//Отлавливаем ошибки
         },(error)=>{
             if(error){
                 console.log("Email could not sent due to error");
