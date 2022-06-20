@@ -5,6 +5,7 @@ require("dotenv").config();
 
 //Инициализация модулей
 const User = require("../models/userModel");
+const Token = require("../models/tokenModel");
 const emailService = require("./emailService");
 const tokenService = require("./tokenService");
 const UserDto = require("../dtos/userDto");
@@ -18,7 +19,7 @@ class userService{
      * @description - Метод сервиса пользователя для регистрации
      * @method
      * @async
-     * @param email - емаил пользователя
+     * @param email - email пользователя
      * @param password - пароль пользователя
      */
     async registration(email,password){
@@ -50,7 +51,7 @@ class userService{
             //Помещаем пользователя в БД
             console.log("Adding new user to DB...");
             const user = await User.create({email: email, password: hashPassword, activationLink: activationLink});
-            //Если не получаеться поместить в БД - выбрасываем ошибку
+            //Если не получается поместить в БД - выбрасываем ошибку
             if(!user)
                 throw new Error("Error save user");
             console.log("New user is: " + user);
@@ -61,10 +62,10 @@ class userService{
                 (process.env.API_URL.toString() || "auth4pro@gmail.com")
                         + "/auth/activate/" + activationLink);
 
-            //Создаем обьект для трансфера данных пользователя
+            //Создаем объект для трансфера данных пользователя
             console.log("Creating Dto for user...")
             const userDto = new UserDto(user);
-            //Если не удаеться создать - то выбрасываем ошибку
+            //Если не удается создать - то выбрасываем ошибку
             if(!userDto)
                 throw new Error("Error on creating user");
             console.log(userDto);
@@ -72,7 +73,7 @@ class userService{
             //Генерируем токены
             console.log("Generating new tokens...")
             const tokens = await tokenService.generateToken({...userDto});
-            //Если не удаеться создать - то выбрасываем ошибку
+            //Если не удается создать - то выбрасываем ошибку
             if(!tokens)
                 throw new Error("Error on generating tokens");
 
@@ -108,7 +109,7 @@ class userService{
             if (!user)
                 throw new Error("Uncorrected link");
 
-            //Измение поля на активированный
+            //Изменение поля на активированный
             user.isActivated = true;
             await user.save();
         } catch (error) {
@@ -121,7 +122,7 @@ class userService{
     /**
      * @description - Метод логина пользователя
      * @method
-     * @param email - емаил пользователя
+     * @param email - email пользователя
      * @param password - пароль пользователя
      */
     async login(email, password) {
@@ -141,10 +142,10 @@ class userService{
                 throw new Error("Password not equal");
             console.log("Password equal: " + isEqualPassword);
 
-            //Создаем обьект для трансфера данных пользователя
+            //Создаем объект для трансфера данных пользователя
             console.log("Creating Dto for user...")
             const userDto = new UserDto(user);
-            //Если не удаеться создать - то выбрасываем ошибку
+            //Если не удается создать - то выбрасываем ошибку
             if (!userDto)
                 throw new Error("Error on creating user");
             console.log("User Dto created: " + userDto);
@@ -152,7 +153,7 @@ class userService{
             //Генерируем токены
             console.log("Generating new tokens...")
             const tokens = await tokenService.generateToken({...userDto});
-            //Если не удаеться создать - то выбрасываем ошибку
+            //Если не удаться создать - то выбрасываем ошибку
             if (!tokens)
                 throw new Error("Error on generating tokens");
 
@@ -169,6 +170,29 @@ class userService{
         } catch (error) {
             //Обрабатываем ошибки и отправляем статус код
             console.log("Error on login in User service")
+            console.log(error);
+        }
+    }
+
+    /**
+     * @description - Метод выхода
+     * @async
+     * @method
+     * @param refreshToken - токен для выхода
+     */
+    async logout(refreshToken){
+        try {
+            //Удаляем токен из БД
+            const token = await tokenService.removeToken(refreshToken);
+            //Если не получилось удалить токен, то выкидываем ошибку
+            if(!token)
+                throw new Error("Error on removing token")
+            //Возвращаем данные о выходе пользователя и удалении токена
+            console.log("Success deleting token")
+            return token;
+        } catch (error) {
+            //Обрабатываем ошибки и отправляем статус код
+            console.log("Error on logout in User service")
             console.log(error);
         }
     }

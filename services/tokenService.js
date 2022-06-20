@@ -85,6 +85,29 @@ class tokenService{
             console.log(error);
         }
     }
+
+    /**
+     * @description - Метод удаления токена
+     * @async
+     * @function
+     * @param refreshToken - токен для выхода
+     */
+    async removeToken(refreshToken){
+        try {
+            //Удаляем токен из БД
+            const tokenData = await Token.deleteOne({refreshToken: refreshToken});
+            //Если там нет такого токена, то выбрасываем ошибку
+            if (!tokenData)
+                throw new Error("Error on deleting token in DB");
+            //Возвращаем информацию об этом
+            return tokenData;
+        } catch (error) {
+            //Обрабатываем ошибки и отправляем статус код
+            console.log("Error on removeToken in Token service")
+            console.log(error);
+        }
+    }
 }
+
 //Экспортируем данный модуль
 module.exports = new tokenService();
