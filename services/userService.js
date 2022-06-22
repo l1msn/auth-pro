@@ -8,6 +8,7 @@ const User = require("../models/userModel");
 const Token = require("../models/tokenModel");
 const emailService = require("./emailService");
 const tokenService = require("./tokenService");
+const authError = require("../exceptions/authError");
 const UserDto = require("../dtos/userDto");
 //Класс сервис для аутентификации и действий пользователя
 /**
@@ -87,7 +88,6 @@ class userService{
                 ...tokens,
                 user: userDto
             }
-
         } catch (error) {
             //Обрабатываем ошибки и отправляем статус код
             console.log("Error on registration in User service")
@@ -193,6 +193,63 @@ class userService{
         } catch (error) {
             //Обрабатываем ошибки и отправляем статус код
             console.log("Error on logout in User service")
+            console.log(error);
+        }
+    }
+
+    /**
+     * @description - Метод обновления refreshToken
+     * @async
+     * @method
+     * @param refreshToken - текущий refresh Token
+     */
+    async refresh(refreshToken){
+        try {
+            //Проверка на наличие самого токена
+            if (!refreshToken)
+                throw new Error("Not found Token");
+
+            //Проводим валидацию самого Токена
+            const userData = tokenService.validateRefreshToken(refreshToken);
+            //Если валидация неудачная, то выбрасываем ошибку
+            if(!userData)
+                throw authError.unauthorizedError("Validation token error");
+
+            //Ищем сам токен в БД
+            const tokenFromDb = tokenService.findToken(refreshToken);
+            //Если его там нет, то выбрасываем ошибку
+            if(!tokenFromDb)
+                throw authError.unauthorizedError("Not found token in DB");
+
+            //Создаем объект для трансфера данных пользователя
+            console.log("Creating Dto for user...");
+            const user = await User.findById(userData.id);
+            const userDto = new UserDto(user);
+            //Если не удается создать - то выбрасываем ошибку
+            if(!userDto)
+                throw new Error("Error on creating user");
+            console.log(userDto);
+
+            //Генерируем токены
+            console.log("Generating new tokens...")
+            const tokens = await tokenService.generateToken({...userDto});
+            //Если не удается создать - то выбрасываем ошибку
+            if(!tokens)
+                throw new Error("Error on generating tokens");
+
+            //Сохраняем или обновляем токен
+            console.log("Saving or update refresh token...")
+            await tokenService.saveToken(userDto.id, tokens.refreshToken);
+
+            //Возвращаем токены и информацию о пользователе
+            console.log("Sending info and tokens...");
+            return {
+                ...tokens,
+                user: userDto
+            }
+        } catch (error) {
+            //Обрабатываем ошибки и отправляем статус код
+            console.log("Error on refresh in User service")
             console.log(error);
         }
     }

@@ -158,7 +158,7 @@ class UserController{
         }
     }
     /**
-     * @description - Метод получения refresh token пользователя
+     * @description - Метод получения нового refresh token пользователя
      * @method
      * @async
      * @param request - запрос
@@ -167,7 +167,25 @@ class UserController{
      */
     async refresh(request,response,next){
         try {
+            //Ищем токен в cookie's
+            const {refreshToken} = request.cookies;
+            //Если его нет, то выбрасываем ошибку
+            if(!refreshToken)
+                return next(authError.badRequest("Not found a token in request"));
 
+            console.log("Refreshing Token...");
+            //Обновляем токен
+            const userData = await userService.refresh(refreshToken);
+            //Если произошла ошибка при обновлении - выбрасываем ошибку
+            if(!userData)
+                return next(authError.unauthorizedError());
+
+            //Добавляем в cookie новый refreshToken
+            response.cookie("refreshToken", userData.refreshToken, {maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true});
+
+            console.log("Refreshing Token success");
+            //Возвращаем данные
+            return response.json(userData);
         } catch (error){
             //Обрабатываем ошибки и отправляем статус код
             console.log("Error on refresh token in Controller")

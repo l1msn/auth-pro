@@ -24,9 +24,15 @@ router.post("/login",
     validator.body("password").notEmpty().withMessage("must be at not empty").
     isLength({min: 3, max: 30}).withMessage("must be min 3 and max 30 characters")
     , userController.login);
-router.post("/logout",userController.logout);
-router.get("/activate/:link",userController.activate);
-router.get("/refresh",userController.refresh);
+router.post("/logout",
+    validator.cookie("refreshToken").notEmpty()
+    ,userController.logout);
+router.get("/activate/:link",
+    validator.param("activationLink").notEmpty()
+    ,userController.activate);
+router.get("/refresh",
+    validator.cookie("refreshToken").notEmpty()
+    ,userController.refresh);
 router.get("/users",userController.getUsers);
 
 
