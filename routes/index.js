@@ -4,7 +4,7 @@ const validator = require("express-validator")
 
 //Инициализация модулей
 const userController = require("../controllers/userController");
-
+const authMiddleware = require("../middleware/authMiddleware");
 
 //Инициализируем Роутера
 const router = Router();
@@ -33,7 +33,7 @@ router.get("/activate/:link",
 router.get("/refresh",
     validator.cookie("refreshToken").notEmpty()
     ,userController.refresh);
-router.get("/users",userController.getUsers);
+router.get("/users", authMiddleware, userController.getUsers);
 
 
 //Экспортируем данный модуль

@@ -202,7 +202,15 @@ class UserController{
      */
     async getUsers(request,response,next){
         try {
-            response.json("Getting users");
+            console.log("Getting all users...");
+            //Получаем всех пользователей
+            const users = await userService.getAllUsers();
+            //Если не получили, то выбросили ошибку
+            if(!users)
+                return next(authError.unauthorizedError());
+
+            console.log("Got all users");
+            return response.json(users);
         } catch (error){
             //Обрабатываем ошибки и отправляем статус код
             console.log("Error on getting users in Controller")

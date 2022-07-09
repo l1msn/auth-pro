@@ -4,23 +4,30 @@ const winstonLogger = require("../middleware/winstonLogger");
 /**
  * @description - Функция обработчик ошибок
  * @function
+ * @module
  * @param error - сама ошибка
  * @param request - запрос к серверу
  * @param response - ответ от сервера
- * @param next - следущая middleware
+ * @param next - следующая middleware
  */
 function errorHandler(error, request, response, next) {
-    //Выводим ошибку в логи
-    console.log(error);
-    //Если это известная нам ошибка (описана в exceptions), то возвращаем уже готовую форму ошибки
-    if(error instanceof authError) {
-        winstonLogger.log("info", error);
-        return response.status(error.status).json({message: error.message, errors: error.errors});
-    }
-    //... могут быть еще другие ошибки
+    try {
+        //Выводим ошибку в логи
+        console.log(error);
+        //Если это известная нам ошибка (описана в exceptions), то возвращаем уже готовую форму ошибки
+        if (error instanceof authError) {
+            winstonLogger.log("info", error);
+            return response.status(error.status).json({message: error.message, errors: error.errors});
+        }
+        //... могут быть еще другие ошибки
 
-    //Если же это неизвестная ошибка, возвращаем готовую схему
-    return response.status(500).json({message: "Unexpected error from server"})
+        //Если же это неизвестная ошибка, возвращаем готовую схему
+        return response.status(500).json({message: "Unexpected error from server"});
+    } catch (error) {
+        //Обрабатываем ошибки и отправляем статус код
+        console.log("Error on errorHandler in errorMiddleware")
+        console.log(error);
+    }
 }
 
 //Экспортируем данный модуль

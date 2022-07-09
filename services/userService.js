@@ -253,6 +253,30 @@ class userService{
             console.log(error);
         }
     }
+
+    /**
+     * @description - Метод получения всех пользователей
+     * @method
+     * @async
+     */
+    async getAllUsers(){
+        try {
+            console.log("Taking data from DB...");
+            //Получаем всех пользователей из БД
+            const users = await User.find({});
+            //Если произошла ошибка, то выбрасываем ее
+            if (!users)
+                throw new Error("Can't take data from DB");
+
+            //Возвращаем список всех пользователей
+            console.log("Success got data form DB");
+            return users;
+        } catch (error) {
+            //Обрабатываем ошибки и отправляем статус код
+            console.log("Error on getAllUsers in User service")
+            console.log(error);
+        }
+    }
 }
 
 //Экспортируем данный модуль
