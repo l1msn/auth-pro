@@ -4,7 +4,7 @@ require("dotenv").config();
 
 //Инициализация модулей
 const Token = require("../models/tokenModel");
-
+const authError = require("../exceptions/authError");
 /**
  * @description - Класс сервис для генерации токенов и их обновления
  * @class
@@ -85,6 +85,106 @@ class tokenService{
             console.log(error);
         }
     }
+
+    /**
+     * @description - Метод удаления токена из БД
+     * @async
+     * @function
+     * @param refreshToken - токен для выхода
+     */
+    async removeToken(refreshToken){
+        try {
+            console.log("Removing Token from DB...")
+            //Удаляем токен из БД
+            const tokenData = await Token.deleteOne({refreshToken: refreshToken});
+            //Если там нет такого токена, то выбрасываем ошибку
+            if (!tokenData)
+                throw new Error("Error on deleting token in DB");
+
+            console.log("Success removing Token from DB");
+            //Возвращаем информацию об этом
+            return tokenData;
+        } catch (error) {
+            //Обрабатываем ошибки и отправляем статус код
+            console.log("Error on removeToken in Token service")
+            console.log(error);
+        }
+    }
+
+    /**
+     * @description - Метод поиска токена в БД
+     * @async
+     * @method
+     * @param refreshToken - текущий refreshToken
+     */
+    async findToken(refreshToken){
+        try {
+            console.log("Searching Token in DB...");
+            //Удаляем токен из БД
+            const tokenData = await Token.findOne({refreshToken: refreshToken});
+            //Если там нет такого токена, то выбрасываем ошибку
+            if (!tokenData)
+                throw new Error("Error on deleting token in DB");
+            //Возвращаем информацию об этом
+            console.log("Token found in DB");
+            return tokenData;
+        } catch (error) {
+            //Обрабатываем ошибки и отправляем статус код
+            console.log("Error on removeToken in Token service")
+            console.log(error);
+        }
+    }
+
+    /**
+     * @description - метод валидации AccessToken
+     * @async
+     * @method
+     * @param token - токен
+     */
+    async validateAccessToken(token){
+        try {
+            //Валидируем токен
+            console.log("Validating Access Token...");
+            const userData = jwt.verify(token, process.env.SECRED_CODE_ACCESS || "secret-code-access");
+            //Если произошла ошибка валидации, то выбрасываем ее
+            if(!userData)
+                throw new Error("Error on validate Access Token");
+
+            //Возвращаем данные об этом
+            console.log("Validating Access Token success");
+            return userData;
+        } catch (error) {
+            //Обрабатываем ошибки и отправляем статус код
+            console.log("Error on validateAccessToken in Token service")
+            console.log(error);
+        }
+    }
+
+    /**
+     * @description - метод валидации RefreshToken
+     * @async
+     * @method
+     * @param token - токен
+     */
+    async validateRefreshToken(token){
+        try {
+            //Валидируем токен
+            console.log("Validating Refresh Token...");
+            const userData = jwt.verify(token, process.env.SECRED_CODE_REFRESH || "secret-code-refresh");
+            //Если произошла ошибка валидации, то выбрасываем ее
+            if(!userData)
+                throw new Error("Error on validate Access Token");
+
+            //Возвращаем данные об этом
+            console.log("Validating Refresh Token success");
+            return userData;
+        } catch (error) {
+            //Обрабатываем ошибки и отправляем статус код
+            console.log("Error on validateRefreshToken in Token service")
+            console.log(error);
+        }
+    }
 }
+
 //Экспортируем данный модуль
 module.exports = new tokenService();

@@ -6,9 +6,9 @@ const userService = require("../services/userService");
 const authError = require("../exceptions/authError");
 const validator = require("express-validator");
 
-//Класс контроллер для аунтификации и действий пользователя
+//Класс контроллер для аутентификации и действий пользователя
 /**
- * @description - Класс контроллер для аунтификации и действий пользователя
+ * @description - Класс контроллер для аутентификации и действий пользователя
  * @class
  */
 class UserController{
@@ -18,7 +18,7 @@ class UserController{
      * @async
      * @param request - запрос
      * @param response - ответ
-     * @param next - следущая middleware функция
+     * @param next - следующая middleware функция
      */
     async registration(request,response,next){
         try {
@@ -32,15 +32,15 @@ class UserController{
             console.log("Getting data from request...")
             const {email, password} = request.body;
             if(!email || !password)
-                throw authError.badRequest("Not found data in request");
+                return next(authError.badRequest("Not found data in request"));
             console.log("Data are: " + email + " , " + password);
 
             //Регистрируем пользователя
             console.log("Registration new user...")
             const userData = await userService.registration(email, password);
-            //Если не получаеться - выбрасываем ошибку
+            //Если не получается - выбрасываем ошибку
             if(!userData)
-                throw authError.badRequest("Error on registration");
+                return next(authError.badRequest("Error on registration"));
             console.log("New user is created");
 
             //Добавляем в cookie refreshToken
@@ -59,7 +59,7 @@ class UserController{
      * @async
      * @param request - запрос
      * @param response - ответ
-     * @param next - следущая middleware функция
+     * @param next - следующая middleware функция
      */
     async login(request,response,next){
         try {
@@ -73,15 +73,16 @@ class UserController{
             console.log("Getting data from request...");
             const {email, password} = request.body;
             if(!email || !password)
-                throw authError.badRequest("Not found data in request");
+                return next(authError.badRequest("Not found data in request"));
             console.log("Data are: " + email + " , " + password);
 
             //Логин пользователя
             console.log("Login user...")
             const userData = await userService.login(email, password);
             if(!userData)
-                throw authError.badRequest("Error on login");
+                return next(authError.badRequest("Error on login"));
             console.log("Success auth login")
+
             //Добавляем в cookie refreshToken
             response.cookie("refreshToken", userData.refreshToken, {maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true});
 
@@ -98,11 +99,30 @@ class UserController{
      * @async
      * @param request - запрос
      * @param response - ответ
-     * @param next - следущая middleware функция
+     * @param next - следующая middleware функция
      */
     async logout(request,response,next){
         try {
+            //Получаем токен из request'a
+            const {refreshToken} = request.cookies;
+            //Если его нет, то выбрасываем ошибку
+            if(!refreshToken)
+                return next(authError.badRequest("Not found a token in request"));
 
+            //Выходим из сессии\удаляем токен
+            console.log("Logout process...")
+            const token = await userService.logout(refreshToken);
+            //Если из информации об удаление нет, то выбрасываем ошибку
+            if(!token)
+                return next(authError.badRequest("Can't logout and removing token"));
+            //Выводим информацию об этом
+            console.log(token);
+
+            //Удаляем токен локально
+            response.clearCookie('refreshToken');
+            console.log("Success logout");
+            //Возвращаем данные
+            return response.json(token);
         } catch (error){
             console.log("Error on logout in Controller")
             next(error);
@@ -114,7 +134,7 @@ class UserController{
      * @async
      * @param request - запрос
      * @param response - ответ
-     * @param next - следущая middleware функция
+     * @param next - следующая middleware функция
      */
     async activate(request,response,next){
         try {
@@ -123,7 +143,7 @@ class UserController{
             const activationLink = request.params.link;
             //Если ее нет - выбрасываем ошибку
             if(!activationLink)
-                throw authError.badRequest("Cannot get activation Link");
+                return next(authError.badRequest("Cannot get activation Link"));
 
             //Активируем пользователя
             await userService.activate(activationLink);
@@ -135,20 +155,37 @@ class UserController{
             //Обрабатываем ошибки и отправляем статус код
             console.log("Error on activating user in Controller")
             next(error);
-
         }
     }
     /**
-     * @description - Метод получения refresh token пользователя
+     * @description - Метод получения нового refresh token пользователя
      * @method
      * @async
      * @param request - запрос
      * @param response - ответ
-     * @param next - следущая middleware функция
+     * @param next - следующая middleware функция
      */
     async refresh(request,response,next){
         try {
+            //Ищем токен в cookie's
+            const {refreshToken} = request.cookies;
+            //Если его нет, то выбрасываем ошибку
+            if(!refreshToken)
+                return next(authError.badRequest("Not found a token in request"));
 
+            console.log("Refreshing Token...");
+            //Обновляем токен
+            const userData = await userService.refresh(refreshToken);
+            //Если произошла ошибка при обновлении - выбрасываем ошибку
+            if(!userData)
+                return next(authError.unauthorizedError());
+
+            //Добавляем в cookie новый refreshToken
+            response.cookie("refreshToken", userData.refreshToken, {maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true});
+
+            console.log("Refreshing Token success");
+            //Возвращаем данные
+            return response.json(userData);
         } catch (error){
             //Обрабатываем ошибки и отправляем статус код
             console.log("Error on refresh token in Controller")
@@ -161,11 +198,19 @@ class UserController{
      * @async
      * @param request - запрос
      * @param response - ответ
-     * @param next - следущая middleware функция
+     * @param next - следующая middleware функция
      */
     async getUsers(request,response,next){
         try {
-            response.json("Getting users");
+            console.log("Getting all users...");
+            //Получаем всех пользователей
+            const users = await userService.getAllUsers();
+            //Если не получили, то выбросили ошибку
+            if(!users)
+                return next(authError.unauthorizedError());
+
+            console.log("Got all users");
+            return response.json(users);
         } catch (error){
             //Обрабатываем ошибки и отправляем статус код
             console.log("Error on getting users in Controller")

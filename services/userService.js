@@ -5,8 +5,10 @@ require("dotenv").config();
 
 //Инициализация модулей
 const User = require("../models/userModel");
+const Token = require("../models/tokenModel");
 const emailService = require("./emailService");
 const tokenService = require("./tokenService");
+const authError = require("../exceptions/authError");
 const UserDto = require("../dtos/userDto");
 //Класс сервис для аутентификации и действий пользователя
 /**
@@ -18,7 +20,7 @@ class userService{
      * @description - Метод сервиса пользователя для регистрации
      * @method
      * @async
-     * @param email - емаил пользователя
+     * @param email - email пользователя
      * @param password - пароль пользователя
      */
     async registration(email,password){
@@ -50,7 +52,7 @@ class userService{
             //Помещаем пользователя в БД
             console.log("Adding new user to DB...");
             const user = await User.create({email: email, password: hashPassword, activationLink: activationLink});
-            //Если не получаеться поместить в БД - выбрасываем ошибку
+            //Если не получается поместить в БД - выбрасываем ошибку
             if(!user)
                 throw new Error("Error save user");
             console.log("New user is: " + user);
@@ -61,10 +63,10 @@ class userService{
                 (process.env.API_URL.toString() || "auth4pro@gmail.com")
                         + "/auth/activate/" + activationLink);
 
-            //Создаем обьект для трансфера данных пользователя
+            //Создаем объект для трансфера данных пользователя
             console.log("Creating Dto for user...")
             const userDto = new UserDto(user);
-            //Если не удаеться создать - то выбрасываем ошибку
+            //Если не удается создать - то выбрасываем ошибку
             if(!userDto)
                 throw new Error("Error on creating user");
             console.log(userDto);
@@ -72,7 +74,7 @@ class userService{
             //Генерируем токены
             console.log("Generating new tokens...")
             const tokens = await tokenService.generateToken({...userDto});
-            //Если не удаеться создать - то выбрасываем ошибку
+            //Если не удается создать - то выбрасываем ошибку
             if(!tokens)
                 throw new Error("Error on generating tokens");
 
@@ -86,7 +88,6 @@ class userService{
                 ...tokens,
                 user: userDto
             }
-
         } catch (error) {
             //Обрабатываем ошибки и отправляем статус код
             console.log("Error on registration in User service")
@@ -108,7 +109,7 @@ class userService{
             if (!user)
                 throw new Error("Uncorrected link");
 
-            //Измение поля на активированный
+            //Изменение поля на активированный
             user.isActivated = true;
             await user.save();
         } catch (error) {
@@ -121,7 +122,7 @@ class userService{
     /**
      * @description - Метод логина пользователя
      * @method
-     * @param email - емаил пользователя
+     * @param email - email пользователя
      * @param password - пароль пользователя
      */
     async login(email, password) {
@@ -141,10 +142,10 @@ class userService{
                 throw new Error("Password not equal");
             console.log("Password equal: " + isEqualPassword);
 
-            //Создаем обьект для трансфера данных пользователя
+            //Создаем объект для трансфера данных пользователя
             console.log("Creating Dto for user...")
             const userDto = new UserDto(user);
-            //Если не удаеться создать - то выбрасываем ошибку
+            //Если не удается создать - то выбрасываем ошибку
             if (!userDto)
                 throw new Error("Error on creating user");
             console.log("User Dto created: " + userDto);
@@ -152,7 +153,7 @@ class userService{
             //Генерируем токены
             console.log("Generating new tokens...")
             const tokens = await tokenService.generateToken({...userDto});
-            //Если не удаеться создать - то выбрасываем ошибку
+            //Если не удаться создать - то выбрасываем ошибку
             if (!tokens)
                 throw new Error("Error on generating tokens");
 
@@ -169,6 +170,110 @@ class userService{
         } catch (error) {
             //Обрабатываем ошибки и отправляем статус код
             console.log("Error on login in User service")
+            console.log(error);
+        }
+    }
+
+    /**
+     * @description - Метод выхода
+     * @async
+     * @method
+     * @param refreshToken - токен для выхода
+     */
+    async logout(refreshToken){
+        try {
+            //Удаляем токен из БД
+            const token = await tokenService.removeToken(refreshToken);
+            //Если не получилось удалить токен, то выкидываем ошибку
+            if(!token)
+                throw new Error("Error on removing token")
+            //Возвращаем данные о выходе пользователя и удалении токена
+            console.log("Success deleting token")
+            return token;
+        } catch (error) {
+            //Обрабатываем ошибки и отправляем статус код
+            console.log("Error on logout in User service")
+            console.log(error);
+        }
+    }
+
+    /**
+     * @description - Метод обновления refreshToken
+     * @async
+     * @method
+     * @param refreshToken - текущий refresh Token
+     */
+    async refresh(refreshToken){
+        try {
+            //Проверка на наличие самого токена
+            if (!refreshToken)
+                throw new Error("Not found Token");
+
+            //Проводим валидацию самого Токена
+            const userData = tokenService.validateRefreshToken(refreshToken);
+            //Если валидация неудачная, то выбрасываем ошибку
+            if(!userData)
+                throw authError.unauthorizedError("Validation token error");
+
+            //Ищем сам токен в БД
+            const tokenFromDb = tokenService.findToken(refreshToken);
+            //Если его там нет, то выбрасываем ошибку
+            if(!tokenFromDb)
+                throw authError.unauthorizedError("Not found token in DB");
+
+            //Создаем объект для трансфера данных пользователя
+            console.log("Creating Dto for user...");
+            const user = await User.findById(userData.id);
+            const userDto = new UserDto(user);
+            //Если не удается создать - то выбрасываем ошибку
+            if(!userDto)
+                throw new Error("Error on creating user");
+            console.log(userDto);
+
+            //Генерируем токены
+            console.log("Generating new tokens...")
+            const tokens = await tokenService.generateToken({...userDto});
+            //Если не удается создать - то выбрасываем ошибку
+            if(!tokens)
+                throw new Error("Error on generating tokens");
+
+            //Сохраняем или обновляем токен
+            console.log("Saving or update refresh token...")
+            await tokenService.saveToken(userDto.id, tokens.refreshToken);
+
+            //Возвращаем токены и информацию о пользователе
+            console.log("Sending info and tokens...");
+            return {
+                ...tokens,
+                user: userDto
+            }
+        } catch (error) {
+            //Обрабатываем ошибки и отправляем статус код
+            console.log("Error on refresh in User service")
+            console.log(error);
+        }
+    }
+
+    /**
+     * @description - Метод получения всех пользователей
+     * @method
+     * @async
+     */
+    async getAllUsers(){
+        try {
+            console.log("Taking data from DB...");
+            //Получаем всех пользователей из БД
+            const users = await User.find({});
+            //Если произошла ошибка, то выбрасываем ее
+            if (!users)
+                throw new Error("Can't take data from DB");
+
+            //Возвращаем список всех пользователей
+            console.log("Success got data form DB");
+            return users;
+        } catch (error) {
+            //Обрабатываем ошибки и отправляем статус код
+            console.log("Error on getAllUsers in User service")
             console.log(error);
         }
     }
