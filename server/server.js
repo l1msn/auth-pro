@@ -33,9 +33,6 @@ app.use(cors({
 app.use(logger);
 
 //Маршутизация
-app.get("/", (request, response) =>{
-   response.redirect("/auth/login");
-});
 app.use("/auth",router);
 
 app.use(errorMiddleware);

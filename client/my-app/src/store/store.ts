@@ -1,6 +1,9 @@
 import IUser from "../models/IUser";
 import {makeAutoObservable} from "mobx";
 import AuthService from "../services/AuthService";
+import axios from "axios";
+import AuthResponse from "../models/responses/AuthResponse";
+import {API_URL} from "../http";
 
 
 class Store {
@@ -75,6 +78,28 @@ class Store {
         } catch (error: any) {
             //Обрабатываем ошибки и отправляем статус код
             console.log("Error on logout in Store")
+            console.log(error.response?.data?.message);
+        }
+    }
+
+    async checkAuth() {
+        try {
+            console.log("Checking auth...")
+            const response = await axios.get<AuthResponse>(`${API_URL}/refresh`
+            ,{ withCredentials: true });
+            if(!response)
+                throw new Error("No response");
+            console.log(response);
+
+            localStorage.setItem('token', response.data.accessToken);
+            this.setAuth(true);
+            this.setUser(response.data.user);
+
+            console.log("Auth success")
+
+        } catch (error: any) {
+            //Обрабатываем ошибки и отправляем статус код
+            console.log("Error on checkAuth in Store")
             console.log(error.response?.data?.message);
         }
     }
