@@ -24,12 +24,18 @@ app.use(express.json());
 //Инициализируем возможность работы с cookieParser
 app.use(cookieParser());
 //Инициализируем возможность работы с cors
-app.use(cors());
+app.use(cors({
+    credentials: true,
+    origin: process.env.CLIENT_URL
+}));
 
 //Инициализируем логгер
 app.use(logger);
 
 //Маршутизация
+app.get("/", (request, response) =>{
+   response.redirect("/auth/login");
+});
 app.use("/auth",router);
 
 app.use(errorMiddleware);
