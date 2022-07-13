@@ -223,7 +223,8 @@ class userService{
 
             //Создаем объект для трансфера данных пользователя
             console.log("Creating Dto for user...");
-            const user = await User.findById(userData.id);
+            const user = await User.findOne(userData.id);
+            console.log(user);
             const userDto = new UserDto(user);
             //Если не удается создать - то выбрасываем ошибку
             if(!userDto)

@@ -14,7 +14,7 @@ const errorMiddleware = require("./middleware/errorMiddleware")
 const app = express();
 
 //Константы
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 const DB_URI = "mongodb://" + (process.env.MONGO_HOST || "mongo")
         + ":" + (process.env.MONGO_PORT || "27017")
             + "/" + (process.env.MONGO_NAME || "auth");
