@@ -44,7 +44,7 @@ class emailService{
             //Для кого
             to,
             //Заголовок
-            subject: "Активация аккаунта на " + (process.env.API_URL || "http://localhost:3000"),
+            subject: "Активация аккаунта на " + (("http://localhost:" + process.env.PORT) || "http://localhost:3000"),
             //Текст сообщения
             text: "",
             html:

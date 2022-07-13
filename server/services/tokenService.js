@@ -4,7 +4,6 @@ require("dotenv").config();
 
 //Инициализация модулей
 const Token = require("../models/tokenModel");
-const authError = require("../exceptions/authError");
 /**
  * @description - Класс сервис для генерации токенов и их обновления
  * @class
@@ -33,7 +32,7 @@ class tokenService{
             console.log("Generating refresh Token...")
             const refreshToken = jwt.sign(payload,
                 (process.env.SECRED_CODE_REFRESH || "secret-code-refresh")
-                , {expiresIn: "30d"}
+                , {expiresIn: "7d"}
             );
             //Если произошла ошибка - выбрасываем ее
             if(!refreshToken)
