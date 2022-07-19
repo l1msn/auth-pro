@@ -1,13 +1,16 @@
 import axios from "axios";
 import AuthResponse from "../models/responses/AuthResponse";
 
+//URL локального сервера
 export const API_URL = "http://localhost:5000/auth";
 
+//Стандартный аксиос для взаимодействия с сервером
 const $api = axios.create({
     withCredentials: true,
     baseURL: API_URL
 });
 
+//Интерцептор для перехвата requst'a для записи в него определенного header
 $api.interceptors.request.use((config)=>{
     // @ts-ignore
     config.headers.Authorization = `Bearer ${localStorage.getItem('token')}`;

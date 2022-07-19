@@ -7,13 +7,20 @@ import UserService from "./services/UserService";
 
 const App: FC = () => {
     const {store} = useContext(Context);
+    //Создаем локальное состояние для списка пользователей
     const [users, setUsers] = useState<IUser[]>([]);
 
+    //Проверяем при 1ом запуске приложения наличие токена
     useEffect(()=> {
         if(localStorage.getItem('token'))
             store.checkAuth();
     },[]);
 
+    /**
+     * @description - Метод получения всех пользователей
+     * @async
+     * @method
+     */
     async function getUsers() {
         try {
             console.log("Getting users...");

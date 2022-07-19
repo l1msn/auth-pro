@@ -3,11 +3,14 @@ import {Context} from "../index";
 import {observer} from "mobx-react-lite";
 import IUser from "../models/IUser";
 
+//Основная форма аунтификации - Функциональный react component
 const LoginForm: FC = () => {
+    //Создаем 2 локальных состояния для данных
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const {store} = useContext(Context);
 
+    //Форма отрисовки
     return (
         <div>
             <input

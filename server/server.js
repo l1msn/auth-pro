@@ -15,7 +15,8 @@ const app = express();
 
 //Константы
 const PORT = process.env.PORT || 5000;
-const DB_URI = "mongodb://" + (process.env.MONGO_HOST || "mongo")
+const DB_URI = "mongodb://" +
+    ((process.env.MONGO_PORT_DOCKER || "host.docker.internal") || (process.env.MONGO_HOST || "127.0.0.1"))
         + ":" + (process.env.MONGO_PORT || "27017")
             + "/" + (process.env.MONGO_NAME || "auth");
 

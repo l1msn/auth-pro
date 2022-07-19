@@ -9,6 +9,7 @@ interface State {
 
 const store = new Store();
 
+//Создадим контекст для получения данных
 export const Context = createContext<State>({
     store,
 })

@@ -5,16 +5,23 @@ import axios from "axios";
 import AuthResponse from "../models/responses/AuthResponse";
 import {API_URL} from "../http";
 
-
+/**
+ * @description - Класс Стора на основе mobx
+ * @class
+ */
 class Store {
+    //Основные поля Стора
     user = {} as IUser;
     isAuth = false;
     isLoading = false;
 
+    //Конструктор
     constructor() {
+        //Отслеживаем с помощью mobx
         makeAutoObservable(this);
     }
 
+    //Основные мутации полей
     setAuth(bool: boolean) {
         this.isAuth = bool;
     }
@@ -27,6 +34,13 @@ class Store {
         this.isLoading = bool;
     }
 
+    /**
+     * @description - Метод логина
+     * @method
+     * @async
+     * @param email - емайл пользователя
+     * @param password - пароль пользователя
+     */
     async login(email: string, password: string) {
         try {
             console.log("Login process...");
@@ -35,7 +49,6 @@ class Store {
             if(!response)
                 throw new Error("No response");
             console.log(response);
-
             localStorage.setItem('token', response.data.accessToken);
             this.setAuth(true);
             this.setUser(response.data.user);
@@ -48,6 +61,13 @@ class Store {
         }
     }
 
+    /**
+     * @description - Метод регистрации
+     * @method
+     * @async
+     * @param email - емайл пользователя
+     * @param password - пароль пользователя
+     */
     async registration(email: string, password: string) {
         try {
             console.log("Registration process...");
@@ -69,6 +89,11 @@ class Store {
         }
     }
 
+    /**
+     * @description - Метод логаута
+     * @method
+     * @async
+     */
     async logout() {
         try {
             console.log("Logout process...");
@@ -87,6 +112,11 @@ class Store {
         }
     }
 
+    /**
+     * @description - Метод проверки состояния авторизирования
+     * @method
+     * @async
+     */
     async checkAuth() {
         try {
             console.log("Checking auth...");
