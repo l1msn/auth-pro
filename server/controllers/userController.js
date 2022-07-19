@@ -181,7 +181,7 @@ class UserController{
                 return next(authError.unauthorizedError());
 
             //Добавляем в cookie новый refreshToken
-            response.cookie("refreshToken", userData.refreshToken, {maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true});
+            response.cookie("refreshToken", userData.refreshToken, {maxAge: 7 * 24 * 60 * 60 * 1000});
 
             console.log("Refreshing Token success");
             //Возвращаем данные

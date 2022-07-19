@@ -1,11 +1,10 @@
 //Инициализация библиотек
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const uuid = require("uuid");
 require("dotenv").config();
 
 //Инициализация модулей
 const User = require("../models/userModel");
-const Token = require("../models/tokenModel");
 const emailService = require("./emailService");
 const tokenService = require("./tokenService");
 const authError = require("../exceptions/authError");
@@ -60,7 +59,7 @@ class userService{
             //Отправляем на почту ссылку на активацию
             console.log("Sending message to email...")
             await emailService.sendActivationEmail(email,
-                (process.env.API_URL.toString() || "auth4pro@gmail.com")
+                (("http://localhost:" + process.env.PORT) || "http://localhost:3000")
                         + "/auth/activate/" + activationLink);
 
             //Создаем объект для трансфера данных пользователя
@@ -112,6 +111,7 @@ class userService{
             //Изменение поля на активированный
             user.isActivated = true;
             await user.save();
+            console.log(user.isActivated);
         } catch (error) {
             //Обрабатываем ошибки и отправляем статус код
             console.log("Error on activating in User service")
@@ -223,7 +223,8 @@ class userService{
 
             //Создаем объект для трансфера данных пользователя
             console.log("Creating Dto for user...");
-            const user = await User.findById(userData.id);
+            const user = await User.findOne(userData.id);
+            console.log(user);
             const userDto = new UserDto(user);
             //Если не удается создать - то выбрасываем ошибку
             if(!userDto)

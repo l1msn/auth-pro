@@ -14,8 +14,9 @@ const errorMiddleware = require("./middleware/errorMiddleware")
 const app = express();
 
 //Константы
-const PORT = process.env.PORT || 3000;
-const DB_URI = "mongodb://" + (process.env.MONGO_HOST || "mongo")
+const PORT = process.env.PORT || 5000;
+const DB_URI = "mongodb://" +
+    ((process.env.MONGO_PORT_DOCKER || "host.docker.internal") || (process.env.MONGO_HOST || "127.0.0.1"))
         + ":" + (process.env.MONGO_PORT || "27017")
             + "/" + (process.env.MONGO_NAME || "auth");
 
@@ -24,7 +25,10 @@ app.use(express.json());
 //Инициализируем возможность работы с cookieParser
 app.use(cookieParser());
 //Инициализируем возможность работы с cors
-app.use(cors());
+app.use(cors({
+    credentials: true,
+    origin: process.env.CLIENT_URL
+}));
 
 //Инициализируем логгер
 app.use(logger);
