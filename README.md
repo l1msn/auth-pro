@@ -115,7 +115,7 @@
 > npm run start
 >```
 
-## API Reference
+## API
 
 #### Регистрация
 
