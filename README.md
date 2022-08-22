@@ -48,7 +48,7 @@
 > - [MongoDB](https://www.mongodb.com)
 > ### Dev-Ops
 > - [Docker](https://www.docker.com)
-> ### Основные зависимости:
+> ## Основные зависимости:
 > - [mongoose](https://mongoosejs.com) - Для взаимодействия с БД.
 > - [bcrypt](https://www.npmjs.com/package/bcrypt) - Для шифрования паролей.
 > - [jwt](https://www.npmjs.com/package/jsonwebtoken) - Для формирования токенов и является основой аунтификации.
