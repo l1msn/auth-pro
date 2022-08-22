@@ -1,5 +1,0 @@
-# Project exclude paths
-server/node_modules
-.idea
-server/requests.log
-server/errors.log
