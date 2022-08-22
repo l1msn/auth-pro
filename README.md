@@ -177,7 +177,7 @@
 > <img src="https://user-images.githubusercontent.com/64272568/186023613-cc8bbf1e-24b6-408e-8db5-de04bc9fb038.png" width="570" height="200">
 > <img src="https://user-images.githubusercontent.com/64272568/186023678-181af95b-3884-4c46-a0ca-4e2287529d44.png" width="570" height="200">
 
-> 4. Получаем всех пользователей и выходим с аккаунта
+> 5. Получаем всех пользователей и выходим с аккаунта
 >
 > <img src="https://user-images.githubusercontent.com/64272568/186023731-6015aa85-5cb8-4410-8fec-c4872395236b.png" width="570" height="200">
 
